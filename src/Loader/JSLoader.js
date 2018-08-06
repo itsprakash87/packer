@@ -1,7 +1,6 @@
-var babel = require("babel-core");
-
-import babel from "babel-core";
-import Loader from  "./Loader";
+const babel = require("babel-core");
+const { getDependenciesByAst } = require("./JSDependencies");
+const Loader = require("./Loader");
 
 class JSLoader extends Loader {
 
@@ -13,24 +12,34 @@ class JSLoader extends Loader {
     }
 
     parse() {
-        // Do nothing for non supporting extensions.
-        if (!this.ast) {
-            this.ast = {};
+        if (!this.ast || !this.transformedContent) {
+            let parserPlugins = ["jsx", "dynamicImport"];
+            let result = babel.transform(
+                this.pretransformedContent, 
+                {
+                    parserOpts: { plugins: parserPlugins, sourceType: "module" },
+                    extends: this.options.babelrc
+                }
+            );
+            
+            this.ast = result.ast;
+            this.transformedContent = result.code;
         }
         return this.ast;
     }
 
     transform() {
-        // Do nothing for non supporting extensions.
         this.parse();
-        this.transformedContent = this.pretransformedContent;
         return this.transformedContent;
     }
 
     getDependencies() {
-        // Do nothing for non supporting extensions.
-        return new Set();
+        if (!this.ast) {
+            this.parse();
+        }
+
+        return getDependenciesByAst({ ast: this.ast }) || [];
     }
 };
 
-export default JSLoader;
+module.exports = JSLoader;

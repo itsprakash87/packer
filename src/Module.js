@@ -1,9 +1,11 @@
 // Each file is represented by Module class. 
 // Contain information about file.
 // Also does all kind of operation on file like transformationn, parsing, creating dependency tree etc.
-import { getLoader } from "./Loader/LoaderResolver";
-import { promisify } from "util";
-import fs from "fs";
+const { getLoader } = require("./Loader/LoaderResolver");
+const { promisify } = require("util");
+const fs = require("fs");
+const path = require("path");
+const util = require("./Utils");
 
 const readFile = promisify(fs.readFile);
 // Single file should have single module object.
@@ -22,7 +24,7 @@ class Module {
         this.name = moduleName;
         this.options = options;
         this.baseName;
-        this.type;
+        this.type = path.extname(moduleName);
         this.hash;
         this.deps;
         this.depsModules;
@@ -32,7 +34,7 @@ class Module {
         this.transformedContent;
 
         this.loader = getLoader(this.type);
-        this.loader = new this.loader();
+        this.loader = new this.loader("", this.options);
 
         moduleCache[moduleName] = this;
     }
@@ -51,8 +53,17 @@ class Module {
             await this.readModule();
         }
 
+        if (!this.transformedContent) {
+            this.transformedContent = this.loader.transform();
+        }
+
         let deps = await this.loader.getDependencies();
         this.depsModules = new Set();
+        this.deps = {};
+
+        deps = this.resolveDependencyPath(deps);
+
+        this.depTreeCreated = true;
 
         for(let dep of deps){
             // dep = { name: "/home/abc/proj/a.js", value: "../a", isDynamic: true}
@@ -63,10 +74,32 @@ class Module {
             await depModule.createDependencyTree();
         }
 
-        this.depTreeCreated = true;
         return;
+    }
+
+    resolveDependencyPath(deps = []) {
+        let uniqueDeps = {};
+
+        for(let dep of deps){
+            let name;
+
+            if (util.isNodeModule(dep.value)) {
+                name = require.resolve(dep.value, { paths: [this.name] });
+            }
+            else {
+                name = path.resolve(path.dirname(this.name), dep.value);
+                name = require.resolve(name);
+            }
+
+            if (!uniqueDeps[name] || (uniqueDeps[name].type === "DynamicImportDeclaration" && dep.type !== "DynamicImportDeclaration")) {
+                // If same dependency is loaded in module, dynamically and non dynamically, then we prefer non dynamic dependency.
+                uniqueDeps[name] = Object.assign({}, dep, {name: name, isDynamic: dep.type === "DynamicImportDeclaration"});
+            }
+        }
+
+        return Object.values(uniqueDeps);
     }
 
 };
 
-export default Module;
+module.exports = Module;

@@ -42,4 +42,4 @@ class Loader {
     }
 };
 
-export default Loader;
+module.exports = Loader;

@@ -1,5 +1,8 @@
-import Packer from "./src";
+const Packer = require("./src/Packer")
 
-export default Packer;
+module.exports = Packer;
+
+let a = new Packer();
+a.pack();
 
 // https://repl.it/repls/ShamelessFavorablePhysics

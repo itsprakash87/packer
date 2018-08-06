@@ -1,14 +1,21 @@
-import Module from "./Module";
+const Module = require("./Module");
+const path = require("path");
 
 class Packer {
 
     constructor(entryFiles, options = {}) {
-        this.options = options;
-        this.entryFiles = [...entryFiles];
+        this.options = this.prepareOptions(options);
+        // this.entryFiles = [...entryFiles];
+        this.entryFiles = ["/home/prakash/packer/examples/temp/main.js"]
         this.entryModules = new Set();
         this.modules = {};
 
         this.createModulesForEntryFiles();
+    }
+
+    prepareOptions(options = {}) {
+        options.babelrc = options.babelrc || path.resolve(__dirname ,"./.babelrc");
+        return options;
     }
 
     getModule(moduleName) {
@@ -16,7 +23,7 @@ class Packer {
             return this.modules[moduleName];
         }
 
-        return Module(moduleName, this.options);
+        return new Module(moduleName, this.options);
     }
 
     createModulesForEntryFiles() {
@@ -28,10 +35,15 @@ class Packer {
     }
 
     async pack() {
-        for (let entryModule of this.entryModules) {
-            await this.createDependencyTree(entryModule);
-            await this.createPackageTree();
-            await this.createPackages();
+        try {
+            for (let entryModule of this.entryModules) {
+                await this.createDependencyTree(entryModule);
+                await this.createPackageTree();
+                await this.createPackages();
+            }
+        }
+        catch(err) {
+            console.error(err)
         }
     }
 
@@ -49,4 +61,4 @@ class Packer {
 
 };
 
-export default Packer;
+module.exports = Packer;
