@@ -38,6 +38,7 @@ class Packer {
         try {
             for (let entryModule of this.entryModules) {
                 await this.createDependencyTree(entryModule);
+                require("./Utils").logModule(entryModule);
                 await this.createPackageTree();
                 await this.createPackages();
             }
