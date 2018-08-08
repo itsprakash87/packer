@@ -65,7 +65,7 @@ class Module {
 
         this.depTreeCreated = true;
 
-        for(let dep of deps){
+        for (let dep of deps) {
             // dep = { name: "/home/abc/proj/a.js", value: "../a", isDynamic: true}
             this.deps[dep.name] = dep;
 
@@ -80,11 +80,16 @@ class Module {
     resolveDependencyPath(deps = []) {
         let uniqueDeps = {};
 
-        for(let dep of deps){
+        for (let dep of deps) {
             let name;
 
             if (util.isNodeModule(dep.value)) {
-                name = require.resolve(dep.value, { paths: [this.name] });
+                if (util.isNodeCoreModule(dep.value)) {
+                    name = util.resolveNodeCoreModule(dep.value)
+                }
+                else {
+                    name = require.resolve(dep.value, { paths: [this.name] });
+                }
             }
             else {
                 name = path.resolve(path.dirname(this.name), dep.value);
@@ -93,13 +98,12 @@ class Module {
 
             if (!uniqueDeps[name] || (uniqueDeps[name].type === "DynamicImportDeclaration" && dep.type !== "DynamicImportDeclaration")) {
                 // If same dependency is loaded in module, dynamically and non dynamically, then we prefer non dynamic dependency.
-                uniqueDeps[name] = Object.assign({}, dep, {name: name, isDynamic: dep.type === "DynamicImportDeclaration"});
+                uniqueDeps[name] = Object.assign({}, dep, { name: name, isDynamic: dep.type === "DynamicImportDeclaration" });
             }
         }
 
         return Object.values(uniqueDeps);
     }
-
 };
 
 module.exports = Module;
