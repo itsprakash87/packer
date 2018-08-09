@@ -3,27 +3,42 @@
 
 class Package {
 
-    constructor() {
-        this.packageName;
+    constructor(entryModule, parentPackage, siblingPackages) {
+        this.entryModule = entryModule;
+        this.type = entryModule && entryModule.type;
         this.modules = new Set();
         this.childPackages = new Set();
-        this.parentPackage;
+        this.parentPackage = parentPackage;
+        this.siblingPackages = siblingPackages || {};
+
+        this.siblingPackages[this.type] = this;
+        this.modules.add(entryModule);
     }
 
     addModule(modu) {
         this.modules.add(modu);
+        modu.package = this;
     }
 
     removeModule(modu) {
         this.modules.delete(modu);
+        modu.package = null;
     }
 
-    createChildPackage() {
-        let childPackage = new Package();
+    createChildPackage(entryModule) {
+        let childPackage = new Package(entryModule, this);
 
         this.childPackages.add(childPackage);
-        childPackage.parentPackage = this;
+        entryModule.package = childPackage;
         return childPackage;
+    }
+
+    getSiblingPackageForModule(mod) {
+        if (!this.siblingPackages[mod.type]) {
+            this.siblingPackages[mod.type] = new Package(mod, this.parentPackage, this.siblingPackages);
+        }
+
+        return this.siblingPackages[mod.type];
     }
 
     getCommonAncestor(pkg) {
@@ -44,3 +59,5 @@ class Package {
     }
 
 }
+
+module.exports = Package;

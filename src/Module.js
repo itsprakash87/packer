@@ -24,7 +24,7 @@ class Module {
         this.name = moduleName;
         this.options = options;
         this.baseName;
-        this.type = path.extname(moduleName);
+        this.type = path.extname(moduleName).substring(1);;
         this.hash;
         this.deps;
         this.depsModules;
@@ -32,6 +32,7 @@ class Module {
         this.parentModules = new Set();
         this.pretransformedContent;
         this.transformedContent;
+        this.package;
 
         this.loader = getLoader(this.type);
         this.loader = new this.loader("", this.options);
