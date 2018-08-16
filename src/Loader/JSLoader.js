@@ -9,6 +9,10 @@ class JSLoader extends Loader {
 
         this.ast;
         this.transformedContent;
+        this.babelOptions = {
+            parserOpts: { plugins: ["jsx", "dynamicImport"], sourceType: "module" },
+            extends: this.options.babelrc
+        };
     }
 
     parse() {
@@ -16,12 +20,9 @@ class JSLoader extends Loader {
             let parserPlugins = ["jsx", "dynamicImport"];
             let result = babel.transform(
                 this.pretransformedContent, 
-                {
-                    parserOpts: { plugins: parserPlugins, sourceType: "module" },
-                    extends: this.options.babelrc
-                }
+                this.babelOptions,
             );
-            
+
             this.ast = result.ast;
             this.transformedContent = result.code;
         }
@@ -38,7 +39,16 @@ class JSLoader extends Loader {
             this.parse();
         }
 
-        return getDependenciesByAst({ ast: this.ast }) || [];
+        let deps = getDependenciesByAst({ ast: this.ast }) || [];
+
+        if (deps && deps.astChanged) {
+            // If ast was changed during travarsal, then retransform the code.
+            let result = babel.transformFromAst(this.ast, this.pretransformedContent, this.babelOptions);
+            this.ast = result.ast;
+            this.transformedContent = result.code;
+        }
+
+        return deps;
     }
 };
 

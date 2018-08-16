@@ -54,13 +54,13 @@ class Module {
             await this.readModule();
         }
 
-        if (!this.transformedContent) {
-            this.transformedContent = this.loader.transform();
-        }
-
         let deps = await this.loader.getDependencies();
         this.depsModules = new Set();
         this.deps = {};
+        
+        if (!this.transformedContent) {
+            this.transformedContent = this.loader.transform();
+        }
 
         deps = this.resolveDependencyPath(deps);
 
@@ -85,7 +85,7 @@ class Module {
             let name;
 
             if (util.isNodeModule(dep.value)) {
-                if (util.isNodeCoreModule(dep.value)) {
+                if (util.isNodeCoreModule(dep.value) || util.isPackerCustomModule(dep.value)) {
                     name = util.resolveNodeCoreModule(dep.value)
                 }
                 else {

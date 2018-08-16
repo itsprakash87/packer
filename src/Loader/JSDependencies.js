@@ -1,5 +1,6 @@
 const babel = require("babel-core");
 const types = require("babel-types");
+const template = require('babel-template');
 const walk = require("babylon-walk");
 
 module.exports.getDependenciesByCode = function getDependenciesByCode(obj = {}) {
@@ -8,7 +9,7 @@ module.exports.getDependenciesByCode = function getDependenciesByCode(obj = {}) 
 
     let result = babel.transform(code, { parserOpts: { plugins: plugins, sourceType: "module" } })
 
-    return getDependenciesByAst({ code: result.ast });
+    return exports.getDependenciesByAst({ code: result.ast });
 }
 
 module.exports.getDependenciesByAst = function getDependenciesByAst(obj = {}) {
@@ -33,6 +34,10 @@ module.exports.getDependenciesByAst = function getDependenciesByAst(obj = {}) {
             }
             else if (node.callee.type === "Import" && node.arguments.length === 1 && types.isStringLiteral(node.arguments[0])) {
                 deps.push({ value: node.arguments[0].value, type: "DynamicImportDeclaration" })
+
+                node.callee = template('require("_dynamic_loader")')().expression;
+                node.arguments[0] = template('DYNAMIC_MODULE')({DYNAMIC_MODULE: node.arguments[0]}).expression;
+                deps.astChanged = true;
             }
         }
     };
@@ -42,7 +47,7 @@ module.exports.getDependenciesByAst = function getDependenciesByAst(obj = {}) {
     return deps;
 }
 
-// Inspired from parcejs package.
+// Inspired from parcel package.
 // This method ensure that passed 'name' argument does not have any binding.
 // It is used to make sure 'require' call actually point to global 'require' in module.
 // If this method returns true, that means some statement/declaration has override the 'require' variable.
