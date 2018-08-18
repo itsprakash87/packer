@@ -1,5 +1,6 @@
 const babel = require("babel-core");
 const { getDependenciesByAst } = require("./JSDependencies");
+const { replaceEnvVarsWithValues } = require("./JSEnvVars");
 const Loader = require("./Loader");
 
 class JSLoader extends Loader {
@@ -20,11 +21,13 @@ class JSLoader extends Loader {
             let parserPlugins = ["jsx", "dynamicImport"];
             let result = babel.transform(
                 this.pretransformedContent, 
-                this.babelOptions,
+                Object.assign({}, this.babelOptions, { code: false }),
             );
 
             this.ast = result.ast;
             this.transformedContent = result.code;
+
+            replaceEnvVarsWithValues(this.ast);
         }
         return this.ast;
     }
@@ -34,6 +37,12 @@ class JSLoader extends Loader {
         return this.transformedContent;
     }
 
+    generateCode() {
+        let result = babel.transformFromAst(this.ast, this.pretransformedContent, this.babelOptions);
+        this.ast = result.ast;
+        this.transformedContent = result.code;
+    }
+
     getDependencies() {
         if (!this.ast) {
             this.parse();
@@ -41,12 +50,7 @@ class JSLoader extends Loader {
 
         let deps = getDependenciesByAst({ ast: this.ast }) || [];
 
-        if (deps && deps.astChanged) {
-            // If ast was changed during travarsal, then retransform the code.
-            let result = babel.transformFromAst(this.ast, this.pretransformedContent, this.babelOptions);
-            this.ast = result.ast;
-            this.transformedContent = result.code;
-        }
+        this.generateCode();
 
         return deps;
     }

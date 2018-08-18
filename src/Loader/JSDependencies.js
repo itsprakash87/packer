@@ -2,6 +2,7 @@ const babel = require("babel-core");
 const types = require("babel-types");
 const template = require('babel-template');
 const walk = require("babylon-walk");
+const traverse = require('babel-traverse').default;
 
 module.exports.getDependenciesByCode = function getDependenciesByCode(obj = {}) {
     let code = obj.code || "";
@@ -29,7 +30,7 @@ module.exports.getDependenciesByAst = function getDependenciesByAst(obj = {}) {
         },
 
         CallExpression(node, asset, anc) {
-            if (node.callee.name === "require" && node.arguments.length === 1 && types.isStringLiteral(node.arguments[0]) && !hasBinding(anc, "require")) {
+            if (node.callee.name === "require" && node.arguments.length === 1 && types.isStringLiteral(node.arguments[0]) && !hasBinding(anc, "require") && !isInFalsyBranch(anc)) {
                 deps.push({ value: node.arguments[0].value, type: "RequireCallExpression" })
             }
             else if (node.callee.type === "Import" && node.arguments.length === 1 && types.isStringLiteral(node.arguments[0])) {
@@ -73,5 +74,30 @@ function hasBinding(node, name) {
     }
 
     return false;
+}
+
+function isInFalsyBranch(ancestors) {
+  // Check if any ancestors are if statements
+  return ancestors.some((node, index) => {
+    if (types.isIfStatement(node)) {
+      let res = evaluateExpression(node.test);
+      let child = ancestors[index + 1];
+      
+      return res ? child === node.alternate : child === node.consequent;
+    }
+  });
+}
+
+function evaluateExpression(node) {
+  // Wrap the node in a standalone program so we can traverse it
+  node = types.file(types.program([types.expressionStatement(node)]));
+
+  // Find the first expression and evaluate it.
+  let res = null;
+  let obj = babel.transformFromAst(node);
+    
+  res = eval(obj.code);
+
+  return res;
 }
 
