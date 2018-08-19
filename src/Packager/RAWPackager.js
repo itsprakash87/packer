@@ -1,11 +1,11 @@
 const path = require("path");
-const { promisify } = require("util");
 const fs = require("fs");
+const { promisify } = require("util");
 const utils = require("../Utils");
 
 const copyFile = promisify(fs.copyFile);
 
-class CSSPackager {
+class RAWPackager {
 
     constructor(pkg, options = {}) {
         this.package = pkg;
@@ -34,4 +34,4 @@ class CSSPackager {
     }
 }
 
-module.exports = CSSPackager;
+module.exports = RAWPackager;

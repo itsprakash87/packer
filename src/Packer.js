@@ -1,13 +1,15 @@
 const Module = require("./Module");
 const path = require("path");
 const Package = require("./Package");
+const Packager = require("./Packager/Packager");
+const util = require("./Utils");
 
 class Packer {
 
     constructor(entryFiles, options = {}) {
         this.options = this.prepareOptions(options);
         // this.entryFiles = [...entryFiles];
-        this.entryFiles = ["/home/prakash/packer/examples/temp/main.js"]
+        this.entryFiles = ["/home/prakash/my-app/src/index.js"]
         this.entryModules = new Set();
         this.modules = {};
 
@@ -16,6 +18,8 @@ class Packer {
 
     prepareOptions(options = {}) {
         options.babelrc = options.babelrc || path.resolve(__dirname ,"./.babelrc");
+        options.outDir = "/home/prakash/packer/examples/temp/dist/";
+        options.publicPath = options.publicPath || "/";
         return options;
     }
 
@@ -40,9 +44,9 @@ class Packer {
             for (let entryModule of this.entryModules) {
                 await this.createDependencyTree(entryModule);
                 // require("./Utils").logModule(entryModule);
-                let k = await this.createPackageTree(entryModule);
-                require("./Utils").logPackage(k);
-                await this.createPackages();
+                let pkg = await this.createPackageTree(entryModule);
+                require("./Utils").logPackage(pkg);
+                await this.createPackages(pkg);
             }
         }
         catch(err) {
@@ -63,8 +67,6 @@ class Packer {
 
         for(let dep of mod.depsModules) {
             let depInfo = mod.deps[dep.name];
-
-            console.log("dep of ", mod.name, " => ", depInfo)
 
             if (dep.package) {
                 // If this dependecy is already included in some package then move it to common ancestor of both packages.
@@ -89,15 +91,26 @@ class Packer {
         let commonAncestor = pkg.getCommonAncestor(depPackage);
 
         if (commonAncestor) {
+            let sibPackage;
             // Remove the module from both packages and move to common ancestor.
-            pkg.removeModule(mod);
-            depPackage.removeModule(mod);
-            commonAncestor.addModule(mod);
+            sibPackage = pkg.getSiblingPackageForModule(mod);
+            sibPackage && sibPackage.removeModule(mod);
+
+            sibPackage = depPackage.getSiblingPackageForModule(mod);
+            sibPackage && sibPackage.removeModule(mod);
+
+            sibPackage = commonAncestor.getSiblingPackageForModule(mod);
+            sibPackage && sibPackage.addModule(mod);
         }
     }
 
-    createPackages() {
-        return;
+    async createPackages(pkg) {
+        // Make sure the outDir exitst.
+        await util.createDirectoryIfNotExits(this.options.outDir);
+
+        let pkgr = new Packager(pkg, this.options);
+
+        await pkgr.packup();
     }
 
 };
