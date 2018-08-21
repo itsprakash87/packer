@@ -3,6 +3,7 @@ const { promisify } = require("util");
 const fs = require("fs");
 const crypto = require('crypto');
 const md5File = require("md5-file/promise");
+const md5FileSync = require("md5-file").sync;
 
 const dirExist = promisify(fs.exists);
 const mkdir = promisify(fs.mkdir);
@@ -65,6 +66,21 @@ module.exports.getHashOfFile = async function(modName, charCount) {
     }
 
     let hash = await md5File(modName);
+
+    if (charCount > 0) {
+        hash = hash.substr(0, charCount);
+    }
+
+    FILE_HASH_CACHE[modName] = hash;
+    return hash;
+}
+
+module.exports.getHashOfFileSync = function(modName, charCount) {
+    if (FILE_HASH_CACHE[modName]) {
+        return FILE_HASH_CACHE[modName];
+    }
+
+    let hash = md5FileSync(modName);
 
     if (charCount > 0) {
         hash = hash.substr(0, charCount);

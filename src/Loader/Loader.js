@@ -3,8 +3,9 @@
 
 class Loader {
 
-    constructor(content, options={}) {
+    constructor(content, name, options={}) {
         this.pretransformedContent = content || "";
+        this.name = name;
         this.options = options;
         this.ast;
         this.transformedContent;

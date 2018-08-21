@@ -5,8 +5,8 @@ const Loader = require("./Loader");
 
 class JSLoader extends Loader {
 
-    constructor(content, options={}) {
-        super(content, options);
+    constructor(content, name, options={}) {
+        super(content, name, options);
 
         this.ast;
         this.transformedContent;

@@ -35,7 +35,7 @@ class Module {
         this.package;
 
         this.loader = getLoader(this.type);
-        this.loader = new this.loader("", this.options);
+        this.loader = new this.loader("", this.name, this.options);
 
         moduleCache[moduleName] = this;
     }
@@ -59,7 +59,7 @@ class Module {
         this.deps = {};
         
         if (!this.transformedContent) {
-            this.transformedContent = this.loader.transform();
+            this.transformedContent = await this.loader.transform();
         }
 
         deps = this.resolveDependencyPath(deps);
