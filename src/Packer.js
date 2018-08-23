@@ -3,13 +3,13 @@ const path = require("path");
 const Package = require("./Package");
 const Packager = require("./Packager/Packager");
 const util = require("./Utils");
+const logger = require("./Logger")
 
 class Packer {
 
     constructor(entryFiles, options = {}) {
         this.options = this.prepareOptions(options);
-        // this.entryFiles = [...entryFiles];
-        this.entryFiles = ["/home/prakash/my-app/src/index.js"]
+        this.entryFiles = [...entryFiles];
         this.entryModules = new Set();
         this.modules = {};
 
@@ -18,7 +18,7 @@ class Packer {
 
     prepareOptions(options = {}) {
         options.babelrc = options.babelrc || path.resolve(__dirname ,"./.babelrc");
-        options.outDir = "/home/prakash/packer/examples/temp/dist/";
+        options.outDir = options.outDir;
         options.publicPath = options.publicPath || "/";
         return options;
     }
@@ -43,14 +43,13 @@ class Packer {
         try {
             for (let entryModule of this.entryModules) {
                 await this.createDependencyTree(entryModule);
-                // require("./Utils").logModule(entryModule);
                 let pkg = await this.createPackageTree(entryModule);
-                require("./Utils").logPackage(pkg);
                 await this.createPackages(pkg);
+                logger.log(`Successfully created the bundles in ${this.options.outDir}`);
             }
         }
         catch(err) {
-            console.error(err)
+            logger.persistError(err);
         }
     }
 
@@ -65,6 +64,7 @@ class Packer {
             pkg = new Package(mod, null, null);
         }
 
+        logger.log(`Packaging ${mod.baseName}`);
         for(let dep of mod.depsModules) {
             let depInfo = mod.deps[dep.name];
 

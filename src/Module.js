@@ -4,6 +4,7 @@
 const { getLoader } = require("./Loader/LoaderResolver");
 const { promisify } = require("util");
 const fs = require("fs");
+const logger = require("./Logger");
 const path = require("path");
 const util = require("./Utils");
 
@@ -23,7 +24,7 @@ class Module {
 
         this.name = moduleName;
         this.options = options;
-        this.baseName;
+        this.baseName = path.basename(moduleName);
         this.type = path.extname(moduleName).substring(1);;
         this.hash;
         this.deps;
@@ -53,7 +54,7 @@ class Module {
         if (!this.pretransformedContent) {
             await this.readModule();
         }
-
+        logger.log(`Building ${this.baseName}`);
         let deps = await this.loader.getDependencies();
         this.depsModules = new Set();
         this.deps = {};

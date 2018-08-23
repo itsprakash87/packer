@@ -8,6 +8,9 @@
   },
   "author": "Prakash Sharma",
   "license": "MIT",
+  "bin": {
+    "packer": "./src/cli.js"
+  },
   "dependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
@@ -16,12 +19,15 @@
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
     "babylon-walk": "^1.0.2",
+    "chalk": "^2.4.1",
     "md5-file": "^4.0.0",
     "node-libs-browser": "^2.1.0",
     "postcss": "^7.0.2",
     "postcss-import": "^12.0.0",
     "postcss-url": "^8.0.0",
-    "sinon": "^6.1.5"
+    "single-line-log": "^1.1.2",
+    "sinon": "^6.1.5",
+    "yargs": "^12.0.1"
   },
   "devDependencies": {
     "chai": "^4.1.2",
