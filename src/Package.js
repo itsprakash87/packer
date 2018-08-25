@@ -10,6 +10,7 @@ class Package {
         this.childPackages = new Set();
         this.parentPackage = parentPackage;
         this.siblingPackages = siblingPackages || {};
+        this.bundleUrls = [];
 
         this.siblingPackages[this.type] = this;
         this.modules.add(entryModule);

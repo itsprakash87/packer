@@ -36,7 +36,7 @@ module.exports.getDependenciesByAst = function getDependenciesByAst(obj = {}) {
             else if (node.callee.type === "Import" && node.arguments.length === 1 && types.isStringLiteral(node.arguments[0])) {
                 deps.push({ value: node.arguments[0].value, type: "DynamicImportDeclaration" })
 
-                node.callee = template('require("_dynamic_loader")')().expression;
+                node.callee = template('require("_dynamic_loader")(require)')().expression;
                 node.arguments[0] = template('DYNAMIC_MODULE')({DYNAMIC_MODULE: node.arguments[0]}).expression;
                 deps.astChanged = true;
             }

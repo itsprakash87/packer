@@ -26,6 +26,7 @@ class CSSPackager {
         let fileHash = utils.getHashOfString(this.outFile, 5);
         let finalFileName = `${fileName}.${fileHash}${ext}`;
 
+        this.addBundleUrl(modName, finalFileName);
         await this.spitFile(modName, finalFileName);
     }
 
@@ -34,6 +35,18 @@ class CSSPackager {
         let destPath = path.resolve(outDir, destFileName);
 
         await writeFile(destPath, this.outFile);
+    }
+
+    addBundleUrl(modName, finalFileName) {
+        // Add url of this output bundle to package object.
+        // If this package is a child package of any parent package then this url can be used to lazily load this package in parent package.
+        modName = utils.getHashOfString(modName, 5);
+        modName = `${modName}_url`;
+
+        this.package.bundleUrls.push({
+            name: modName,
+            url: path.join(this.options.publicPath, finalFileName)
+        })
     }
 }
 

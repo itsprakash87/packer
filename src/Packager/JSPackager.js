@@ -44,6 +44,8 @@ class JSPackager {
             this.addModuleInfo(name, modu, deps);
         }
 
+        await this.appendChildPackagesUrls();
+
         let modName = (this.package && this.package.entryModule && this.package.entryModule.name) || "";
         let ext = path.extname(modName) || "";
         let fileName = path.basename(modName, ext);
@@ -51,6 +53,8 @@ class JSPackager {
         let finalFileName = `${fileName}.${fileHash}${ext}`;
 
         this.outFile += `\n ], "${util.getHashOfString(modName, 5)}") \n )`;
+
+        this.addBundleUrl(modName, finalFileName);
 
         await this.spitFile(finalFileName);
     }
@@ -80,6 +84,34 @@ class JSPackager {
 
         this.addModuleInfo(name, moduContent, "{}");
         this.addedNonJsModules[name] = true;
+    }
+
+    addBundleUrl(modName, finalFileName) {
+        // Add url of this output bundle to package object.
+        // If this package is a child package of any parent package then this url can be used to lazily load this package in parent package.
+        modName = util.getHashOfString(modName, 5);
+        modName = `${modName}_url`;
+
+        this.package.bundleUrls.push({
+            name: modName,
+            url: path.join(this.options.publicPath, finalFileName)
+        })
+    }
+
+    async appendChildPackagesUrls() {
+        let children = this.package.childPackages;
+
+        // If there are any child packages of this package, then add urls of those packages in this package's code.
+        // This urls will be used for lazily loading the child package.
+        for (let child of children) {
+            if (child && Array.isArray(child.bundleUrls) && child.bundleUrls.length > 0) {
+                for (let bundleUrl of child.bundleUrls) {
+                    let moduContent = `function(require, module, exports){\n module.exports = "${bundleUrl.url}"\n}`
+
+                    this.addModuleInfo(bundleUrl.name, moduContent, "{}");
+                }
+            }
+        }
     }
 }
 
