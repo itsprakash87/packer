@@ -27,6 +27,12 @@ _PACKER_REQUIRE = (function(modules, entryPoint) {
         return requireCache[requiredModuleName];
     }
 
+    _packer_rq.__proto__.registerLoadedModule = function(modName, content, deps = {}) {
+      if (!moduleMap[modName]) {
+        moduleMap[modName] = { name: modName, module: content, deps: deps };
+      }
+    }
+
     function requireClass(parentModuleDeps) {
         var self = this;
         this.rq = function(requiredModuleName) {
@@ -37,10 +43,6 @@ _PACKER_REQUIRE = (function(modules, entryPoint) {
 
         this.rq.resolve = function(moduleName) {
             return self.deps[moduleName];
-        }
-
-        this.rq.requireByName = function(requiredModuleName) {
-            return _packer_rq({[requiredModuleName]: requiredModuleName}, requiredModuleName)
         }
     }
 

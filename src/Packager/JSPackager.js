@@ -71,7 +71,7 @@ class JSPackager {
     }
 
     async addNonJsModuleInfo(name, modulePath) {
-        if (this.addedNonJsModules[name]) {
+        if (this.addedNonJsModules[name] || path.extname(modulePath) === ".css") {
             return;
         }
         let ext = path.extname(modulePath) || "";

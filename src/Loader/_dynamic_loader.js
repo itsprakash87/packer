@@ -9,9 +9,13 @@ module.exports = function _dynamic_loader(rq) {
             }
             else {
                 var modName = modNameHash + "_url";
-                var lazyBundleUrl = require.requireByName(modName);
+                var lazyBundleUrl = _PACKER_REQUIRE({[modName]: modName}, modName);
 
                 lazyLoadBundle(lazyBundleUrl).then(function() {
+                    if (typeof _PACKER_REQUIRE.registerLoadedModule === "function") {
+                        // Register/cache the loaded asset so that when required next time, it should be loaded from cache.
+                        _PACKER_REQUIRE.registerLoadedModule(modNameHash, emptyFunction);
+                    }
                    var exp =  _PACKER_REQUIRE({[modNameHash]: modNameHash}, modNameHash);
                    res(exp);
                 }).catch(function(err) {
@@ -73,3 +77,7 @@ function lazyLoadCSS(url) {
         document.getElementsByTagName('head')[0].appendChild(style);
     });
 };
+
+function emptyFunction() {
+
+}
