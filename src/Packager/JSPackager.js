@@ -1,6 +1,7 @@
 const md5File = require("md5-file/promise");
 const path = require("path");
 const fs = require("fs");
+const uglifyJS = require("uglify-es");
 const { promisify } = require("util");
 const util = require("../Utils");
 
@@ -55,6 +56,8 @@ class JSPackager {
         this.outFile += `\n ], "${util.getHashOfString(modName, 5)}") \n )`;
 
         this.addBundleUrl(modName, finalFileName);
+
+        this.outFile = this.minifyFile(this.outFile);
 
         await this.spitFile(finalFileName);
     }
@@ -111,6 +114,21 @@ class JSPackager {
                     this.addModuleInfo(bundleUrl.name, moduContent, "{}");
                 }
             }
+        }
+    }
+
+    minifyFile(fl) {
+        if (this.options.nominify) {
+            return;
+        }
+
+        let result = uglifyJS.minify(fl);
+
+        if (!result.error) {
+            return result.code;
+        }
+        else {
+            throw new Error(result.error);
         }
     }
 }
