@@ -6,6 +6,7 @@ const path = require("path");
 
 let command, files, options = {};
 
+// Currently only build command is supported.
 if (argv._.length === 0) {
     command = "build";
 }
@@ -51,6 +52,10 @@ if (options.publicPath) {
 
 if (options.babelrc) {
     options.babelrc = path.resolve(cwd, options.babelrc);
+}
+
+if (options.template) {
+    options.template = path.resolve(cwd, options.template);
 }
 
 if (Array.isArray(files)) {

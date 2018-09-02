@@ -4,6 +4,7 @@ const Package = require("./Package");
 const Packager = require("./Packager/Packager");
 const util = require("./Utils");
 const logger = require("./Logger")
+const HtmlInjector = require("./HtmlInjector");
 
 class Packer {
 
@@ -20,6 +21,8 @@ class Packer {
         options.babelrc = options.babelrc || path.resolve(__dirname ,"./.babelrc");
         options.outDir = options.outDir;
         options.publicPath = options.publicPath || "/";
+        options.template = options.template;
+        options.nominify = options.nominify || false;
         return options;
     }
 
@@ -45,11 +48,12 @@ class Packer {
                 await this.createDependencyTree(entryModule);
                 let pkg = await this.createPackageTree(entryModule);
                 await this.createPackages(pkg);
+                await this.injectUrlToHTML(pkg);
                 logger.log(`Successfully created the bundles in ${this.options.outDir}`);
             }
         }
         catch(err) {
-            logger.persistError(err);
+            logger.persistError(err.stack);
         }
     }
 
@@ -111,6 +115,14 @@ class Packer {
         let pkgr = new Packager(pkg, this.options);
 
         await pkgr.packup();
+    }
+
+    async injectUrlToHTML(pkg) {
+        if (this.options.template) {
+            let injector = new HtmlInjector(this.options.template, pkg, this.options);
+
+            await injector.injectAndSpitHtml();
+        }
     }
 
 };
