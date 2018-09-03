@@ -16,7 +16,6 @@ module.exports.getLoader = function (moduleType) {
         }
     }
     else {
-        // If file type is not supported then return raw loader.
         return Loader;
     }
 };

@@ -18,5 +18,5 @@ module.exports.persistLog = function(str) {
 };
 
 module.exports.persistError = function(str) {
-    log(chalk.red(str))
+    log(chalk.red(str + "\n"))
 };

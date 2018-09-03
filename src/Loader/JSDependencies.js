@@ -89,10 +89,9 @@ function isInFalsyBranch(ancestors) {
 }
 
 function evaluateExpression(node) {
-  // Wrap the node in a standalone program so we can traverse it
+  // Wrap the node in a standalone program to evaluate
   node = types.file(types.program([types.expressionStatement(node)]));
 
-  // Find the first expression and evaluate it.
   let res = null;
   let obj = babel.transformFromAst(node);
     
