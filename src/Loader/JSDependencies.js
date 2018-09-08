@@ -48,7 +48,7 @@ module.exports.getDependenciesByAst = function getDependenciesByAst(obj = {}) {
     return deps;
 }
 
-// Inspired from parcel package.
+// Inspired from parceljs package.
 // This method ensure that passed 'name' argument does not have any binding.
 // It is used to make sure 'require' call actually point to global 'require' in module.
 // If this method returns true, that means some statement/declaration has override the 'require' variable.

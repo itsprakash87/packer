@@ -1,0 +1,12 @@
+.Lazy {
+    border-radius: 5px;
+    width: 50%;
+    padding-top: 12px;
+    padding-bottom: 30px;
+    padding-left: 24px;
+    padding-right: 24px;
+    height: auto;
+    margin: auto;
+    background: #6b3030;
+    color: white;
+}

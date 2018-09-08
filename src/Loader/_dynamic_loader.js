@@ -5,9 +5,12 @@ module.exports = function _dynamic_loader(rq) {
             var mod = _PACKER_REQUIRE({[modNameHash]: modNameHash}, modNameHash);
 
             if (mod) {
+                // If module is loaded then simply resolve with module content.
                 res(mod)
             }
             else {
+                // Bundle include the urls of child bundles.
+                // So get the url of bundle to load lazily.
                 var modName = modNameHash + "_url";
                 var lazyBundleUrl = _PACKER_REQUIRE({[modName]: modName}, modName);
 

@@ -11,7 +11,7 @@ const util = require("./Utils");
 const readFile = promisify(fs.readFile);
 // Single file should have single module object.
 // If same file comes multiple time then return the same Module object.
-// This variable keeps track of that.
+// This const keeps track of that.
 const moduleCache = {};
 
 class Module {
