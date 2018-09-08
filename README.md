@@ -35,7 +35,7 @@ packer ./main.js -o ./build
 ## Example
 
 #### Command line example
-![Command line](./example/gifs/cli.gif)
+![Command line](./examples/gifs/cli.gif)
 
 #### Lazy loading example
-![Lazy loading](./example/gifs/lazy_loading.gif)
+![Lazy loading](./examples/gifs/lazy_loading.gif)
