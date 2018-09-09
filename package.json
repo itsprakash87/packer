@@ -1,13 +1,21 @@
 {
-  "name": "packer",
+  "name": "@itsprakash87/packer",
   "version": "1.0.0",
   "description": "A simple module bundler",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsprakash87/packer.git"
+  },
   "author": "Prakash Sharma",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/itsprakash87/packer/issues"
+  },
+  "homepage": "https://github.com/itsprakash87/packer#readme",
   "bin": {
     "packer": "./src/cli.js"
   },
